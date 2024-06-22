@@ -11,9 +11,10 @@ export default function Login() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   return (
-    <div className="fullHeight flex flex-col justify-center items-center gap-3">
+    <div className="fullHeight flex flex-col justify-center items-center gap-3  max-w-[300px] mx-auto">
       <h1 className="text-4xl font-semibold">Login to Cosy</h1>
       <img src="./Cosy.png" className="h-32" />
       <div className="flex flex-col gap-5">
@@ -37,15 +38,25 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <Button onClick={() => login(username, password)}>Login</Button>
-        <div className="flex items-center gap-2 justify-center text-sm mt-[10px]">
+        <span className="text-red-500 text-xs">{error}</span>
+        <Button
+          onClick={async () => {
+            const { error } = await login(username, password);
+            if (error) {
+              setError(error.message);
+            }
+          }}
+        >
+          Login
+        </Button>
+        <div className="flex items-center gap-2 justify-center text-xs mt-[10px]">
           <span>Do you need an account?</span>
           <Button
             variant={"ghost"}
             size={"sm"}
             onClick={() => navigation("/signup")}
           >
-            <span className="text-sm">Sign Up</span>
+            <span className="text-xs">Sign Up</span>
           </Button>
         </div>
       </div>

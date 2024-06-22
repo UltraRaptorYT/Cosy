@@ -1,26 +1,16 @@
 import { useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "@/context/UserContext";
-// import {
-//   Drawer,
-//   DrawerClose,
-//   DrawerContent,
-//   DrawerDescription,
-//   DrawerFooter,
-//   DrawerHeader,
-//   DrawerTitle,
-//   DrawerTrigger,
-// } from "@/components/ui/drawer";
-// import { Button } from "@/components/ui/button";
-// import { ScrollArea } from "@/components/ui/scroll-area";
 import Game from "@/components/Game";
 import supabase from "@/lib/supabase";
 import { RealtimeChannel } from "@supabase/supabase-js";
+// import Peer from "simple-peer";
 
 export default function Home() {
-  const [_, setChannel] = useState<RealtimeChannel>();
+  const [channel, setChannel] = useState<RealtimeChannel>();
   const userContext = useContext(UserContext);
   const navigate = useNavigate();
+  const [_, setStream] = useState<MediaStream>();
   useEffect(() => {
     const user = sessionStorage.getItem("user");
     if (user) {
@@ -55,9 +45,8 @@ export default function Home() {
       })
       .on("presence", { event: "leave" }, async ({ key, leftPresences }) => {
         console.log("leave", key, leftPresences);
-      });
-
-    channel.subscribe();
+      })
+      .subscribe();
     setChannel(channel);
 
     return () => {
@@ -66,30 +55,17 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({ video: false, audio: true })
+      .then((currentStream) => {
+        setStream(currentStream);
+      });
+  }, []);
+
   return (
     <div className="h-full flex items-center justify-center">
-      <Game></Game>
-      {/* <Drawer direction="right">
-        <DrawerTrigger asChild>
-          <Button>Open</Button>
-        </DrawerTrigger>
-        <DrawerContent className="fullHeight top-0 right-0 left-auto mt-0 w-[500px] rounded-none">
-          <ScrollArea className="fullHeight">
-            <DrawerHeader>
-              <DrawerTitle>Are you absolutely sure?</DrawerTitle>
-              <DrawerDescription>
-                This action cannot be undone.
-              </DrawerDescription>
-            </DrawerHeader>
-            <DrawerFooter>
-              <Button>Submit</Button>
-              <DrawerClose>
-                <Button>Cancel</Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </ScrollArea>
-        </DrawerContent>
-      </Drawer> */}
+      <Game user={userContext?.user} channel={channel}></Game>
     </div>
   );
 }

@@ -57,7 +57,7 @@ export const useAuth = () => {
       return { error: null };
     }
 
-    return { error: "Invalid username or password" };
+    return { error: { message: "Invalid username or password" } };
   };
 
   const logout = () => {

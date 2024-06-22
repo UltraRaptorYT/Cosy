@@ -1,25 +1,34 @@
-import { useEffect, useState, useRef, useContext } from "react";
+import { useEffect, useState, useRef } from "react";
 import TileMap from "./TileMap";
 import tilesheet from "@/assets/global.png";
 import playerImage from "@/assets/character/body/char1.png";
 import { map, playerFrames } from "@/constants";
-import { PlayerDirection } from "@/types";
-import { UserContext } from "@/context/UserContext";
+import { PlayerDirection, UserType } from "@/types";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 const tileSize = 16;
 const playerSize = 32;
 const scale = 2;
-const speed = 0.35; // Pixels per frame
-const changeSpeed = 0.03;
+const speed = 1; // Pixels per frame
+const changeSpeed = 0.05;
 
-export default function Game({}: {}) {
-  const userContext = useContext(UserContext);
-  const [playerPosition, setPlayerPosition] = useState({ x: 0, y: 0 });
+export default function Game({
+  user,
+  // channel,
+}: {
+  user: UserType | undefined;
+  channel: RealtimeChannel | undefined;
+}) {
+  const [playerPosition, setPlayerPosition] = useState({
+    x: 3 * tileSize * scale,
+    y: 3 * tileSize * scale,
+  });
   const [playerFramesCount, setPlayerFramesCount] = useState(0);
   const [playerDirection, setPlayerDirection] =
     useState<PlayerDirection>("down");
   const [playerFrameCoords, setPlayerFrameCoords] = useState({ x: 0, y: 0 });
   const keysPressed = useRef<{ [key: string]: boolean }>({});
+  const lastUpdateRef = useRef<number>(0);
 
   const isWalkable = (x: number, y: number) => {
     const scaledTileSize = tileSize * scale * 0.85;
@@ -42,48 +51,56 @@ export default function Game({}: {}) {
       map[tileY2][tileX2].walkable
     );
   };
-  const updatePlayerPosition = () => {
+
+  const updatePlayerPosition = (timestamp: number) => {
+    if (lastUpdateRef.current === 0) lastUpdateRef.current = timestamp;
+    const deltaTime = (timestamp - lastUpdateRef.current) / 1000; // convert to seconds
+
     setPlayerPosition((prev) => {
       let newPos = { ...prev };
       let tempPos = { ...prev };
+      let moved = false;
+
       if (keysPressed.current["w"] || keysPressed.current["arrowup"]) {
-        // Up
-        tempPos.y -= speed;
+        tempPos.y -= speed * deltaTime * 60;
         setPlayerDirection("up");
-        setPlayerFramesCount((prev) => prev + changeSpeed);
+        moved = true;
       }
       if (keysPressed.current["s"] || keysPressed.current["arrowdown"]) {
-        // Down
-        tempPos.y += speed;
+        tempPos.y += speed * deltaTime * 60;
         setPlayerDirection("down");
-        setPlayerFramesCount((prev) => prev + changeSpeed);
+        moved = true;
       }
       if (keysPressed.current["a"] || keysPressed.current["arrowleft"]) {
-        // Left
-        tempPos.x -= speed;
+        tempPos.x -= speed * deltaTime * 60;
         setPlayerDirection("left");
-        setPlayerFramesCount((prev) => prev + changeSpeed);
+        moved = true;
       }
       if (keysPressed.current["d"] || keysPressed.current["arrowright"]) {
-        // Right
-        tempPos.x += speed;
+        tempPos.x += speed * deltaTime * 60;
         setPlayerDirection("right");
-        setPlayerFramesCount((prev) => prev + changeSpeed);
+        moved = true;
       }
 
       if (isWalkable(tempPos.x, tempPos.y)) {
         newPos = tempPos;
       }
 
+      // Update the frame if the player moved
+      if (moved) {
+        setPlayerFramesCount((prev) => prev + changeSpeed);
+      } else {
+        setPlayerFramesCount(0);
+      }
+
       return newPos;
     });
-    // setPlayerFramesCount(0);
 
+    lastUpdateRef.current = timestamp;
     requestAnimationFrame(updatePlayerPosition);
   };
 
   useEffect(() => {
-    console.log("hi", playerDirection, playerFramesCount);
     setPlayerFrameCoords(
       playerFrames[playerDirection][
         Math.floor(playerFramesCount % playerFrames[playerDirection].length)
@@ -96,7 +113,6 @@ export default function Game({}: {}) {
   };
 
   const handleKeyUp = (e: KeyboardEvent) => {
-    setPlayerFramesCount(0);
     keysPressed.current[e.key.toLowerCase()] = false;
   };
 
@@ -111,13 +127,6 @@ export default function Game({}: {}) {
     };
   }, []);
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
   return (
     <TileMap
       tileSize={tileSize}
@@ -128,7 +137,7 @@ export default function Game({}: {}) {
       playerImageSrc={playerImage}
       playerFrameCoords={playerFrameCoords}
       scale={scale}
-      user={userContext?.user}
+      user={user}
     />
   );
 }

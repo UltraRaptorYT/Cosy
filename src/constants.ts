@@ -4,7 +4,7 @@ export const map: Tile[][] = [
   [
     { tileX: 112, tileY: 1056, walkable: true },
     { tileX: 112, tileY: 1056, walkable: true },
-    { tileX: 112, tileY: 1056, walkable: true },
+    { tileX: 192, tileY: 1104, walkable: false },
     { tileX: 112, tileY: 1056, walkable: true },
     { tileX: 112, tileY: 1056, walkable: true },
     { tileX: 112, tileY: 1056, walkable: true },

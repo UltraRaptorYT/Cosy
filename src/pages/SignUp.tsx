@@ -18,10 +18,11 @@ export default function SignUp() {
     clothes: 0,
     hairColor: 0,
   });
+  const [error, setError] = useState("");
 
   return (
-    <div className="fullHeight flex flex-col justify-center items-center gap-3">
-      <h1 className="text-4xl font-semibold">Sign Up to Cosy</h1>
+    <div className="fullHeight flex flex-col justify-center items-center gap-3 max-w-[300px] mx-auto">
+      <h1 className="text-4xl font-semibold">Join to Cosy</h1>
       <img src="./Cosy.png" className="h-32" />{" "}
       <div className="flex flex-col gap-5">
         <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -48,17 +49,35 @@ export default function SignUp() {
           playerAttributes={playerAttributes}
           setPlayerAttributes={setPlayerAttributes}
         ></GenerateCharacter>
-        <Button onClick={() => signUp(username, password, playerAttributes)}>
+        <Button
+          onClick={async () => {
+            const { error } = await signUp(
+              username,
+              password,
+              playerAttributes
+            );
+            if (error) {
+              if (
+                error.message ==
+                `duplicate key value violates unique constraint "cosy_user_name_key"`
+              ) {
+                return setError("Username already exists");
+              }
+              setError(error.message);
+            }
+          }}
+        >
           Sign Up
         </Button>
-        <div className="flex items-center gap-2 justify-center text-sm mt-[10px]">
+        <span className="text-red-500 text-xs">{error}</span>
+        <div className="flex items-center gap-2 justify-center text-xs mt-[10px]">
           <span>Already have an account?</span>
           <Button
             variant={"ghost"}
             size={"sm"}
             onClick={() => navigation("/login")}
           >
-            <span className="text-sm">Login</span>
+            <span className="text-xs">Login</span>
           </Button>
         </div>
       </div>
