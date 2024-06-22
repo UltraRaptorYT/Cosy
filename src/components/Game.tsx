@@ -119,18 +119,16 @@ export default function Game({}: {}) {
   }, []);
 
   return (
-    <div className="App">
-      <TileMap
-        tileSize={tileSize}
-        playerSize={playerSize}
-        map={map}
-        tileSheetSrc={tilesheet}
-        playerPosition={playerPosition}
-        playerImageSrc={playerImage}
-        playerFrameCoords={playerFrameCoords}
-        scale={scale}
-        user={userContext?.user}
-      />
-    </div>
+    <TileMap
+      tileSize={tileSize}
+      playerSize={playerSize}
+      map={map}
+      tileSheetSrc={tilesheet}
+      playerPosition={playerPosition}
+      playerImageSrc={playerImage}
+      playerFrameCoords={playerFrameCoords}
+      scale={scale}
+      user={userContext?.user}
+    />
   );
 }

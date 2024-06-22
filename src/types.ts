@@ -13,3 +13,9 @@ export type UserType = {
 };
 
 export type PlayerDirection = "up" | "down" | "left" | "right";
+
+export interface Tile {
+  tileX: number;
+  tileY: number;
+  walkable: boolean;
+}

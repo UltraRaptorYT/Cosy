@@ -2,12 +2,7 @@ import React from "react";
 import { Stage, Layer, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import Player from "@/components/Player";
-import { UserType } from "@/types";
-
-interface Tile {
-  tile: number;
-  walkable: boolean;
-}
+import { UserType, Tile } from "@/types";
 
 interface TileMapProps {
   tileSize: number;
@@ -37,8 +32,8 @@ const TileMap: React.FC<TileMapProps> = ({
   const renderTile = (tile: Tile, x: number, y: number) => {
     if (!image) return null;
 
-    const sX = (tile.tile % (image.width / tileSize)) * tileSize;
-    const sY = Math.floor(tile.tile / (image.width / tileSize)) * tileSize;
+    // const sX = (tile.tile % (image.width / tileSize)) * tileSize;
+    // const sY = Math.floor(tile.tile / (image.width / tileSize)) * tileSize;
 
     return (
       <KonvaImage
@@ -48,7 +43,12 @@ const TileMap: React.FC<TileMapProps> = ({
         width={tileSize * scale}
         height={tileSize * scale}
         image={image}
-        crop={{ x: sX, y: sY, width: tileSize, height: tileSize }}
+        crop={{
+          x: tile.tileX,
+          y: tile.tileY,
+          width: tileSize,
+          height: tileSize,
+        }}
       />
     );
   };
