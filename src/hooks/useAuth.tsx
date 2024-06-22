@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useContext } from "react";
 import supabase from "@/lib/supabase";
 import CryptoJS from "crypto-js";
 import { useNavigate } from "react-router-dom";
@@ -25,10 +25,16 @@ export const useAuth = () => {
       return { error };
     }
 
-    userContext?.setUser(data[0] as UserType);
-    navigation("/");
+    setUserLogin(data[0]);
     // Here you can implement your signup logic, e.g. create a new user in a database
     return { error: null };
+  };
+
+  const setUserLogin = (user: any) => {
+    delete user.password;
+    userContext?.setUser(user as UserType);
+    sessionStorage.setItem("user", JSON.stringify(user));
+    navigation("/");
   };
 
   const login = async (username: string, password: string) => {
@@ -42,10 +48,9 @@ export const useAuth = () => {
     if (error) {
       return { error };
     }
-    // Here you can implement your login logic, e.g. check if the user exists in a database
     if (data.length > 0) {
-      userContext?.setUser(data[0] as UserType);
-      navigation("/");
+      const user = data[0];
+      setUserLogin(data[0]);
       return { error: null };
     }
 
