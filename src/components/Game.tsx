@@ -1,101 +1,26 @@
 import { useEffect, useState, useRef } from "react";
 import TileMap from "./TileMap";
 import tilesheet from "@/assets/global.png";
-import playerImage from "@/assets/react.svg";
-
-const map: { tile: number; walkable: boolean }[][] = [
-  [
-    { tile: 0, walkable: true },
-    { tile: 1, walkable: true },
-    { tile: 2, walkable: true },
-    { tile: 3, walkable: true },
-    { tile: 0, walkable: true },
-    { tile: 1, walkable: true },
-    { tile: 2, walkable: true },
-    { tile: 3, walkable: true },
-  ],
-  [
-    { tile: 4, walkable: true },
-    { tile: 5, walkable: false },
-    { tile: 6, walkable: true },
-    { tile: 7, walkable: true },
-    { tile: 4, walkable: true },
-    { tile: 5, walkable: false },
-    { tile: 6, walkable: true },
-    { tile: 7, walkable: true },
-  ],
-  [
-    { tile: 8, walkable: true },
-    { tile: 9, walkable: true },
-    { tile: 10, walkable: true },
-    { tile: 11, walkable: true },
-    { tile: 8, walkable: true },
-    { tile: 9, walkable: true },
-    { tile: 10, walkable: true },
-    { tile: 11, walkable: true },
-  ],
-  [
-    { tile: 12, walkable: true },
-    { tile: 13, walkable: true },
-    { tile: 14, walkable: true },
-    { tile: 15, walkable: true },
-    { tile: 12, walkable: true },
-    { tile: 13, walkable: true },
-    { tile: 14, walkable: true },
-    { tile: 15, walkable: true },
-  ],
-  [
-    { tile: 0, walkable: true },
-    { tile: 1, walkable: true },
-    { tile: 2, walkable: true },
-    { tile: 3, walkable: true },
-    { tile: 0, walkable: true },
-    { tile: 1, walkable: true },
-    { tile: 2, walkable: true },
-    { tile: 3, walkable: true },
-  ],
-  [
-    { tile: 4, walkable: true },
-    { tile: 5, walkable: false },
-    { tile: 6, walkable: true },
-    { tile: 7, walkable: true },
-    { tile: 4, walkable: true },
-    { tile: 5, walkable: false },
-    { tile: 6, walkable: true },
-    { tile: 7, walkable: true },
-  ],
-  [
-    { tile: 8, walkable: true },
-    { tile: 9, walkable: true },
-    { tile: 10, walkable: true },
-    { tile: 11, walkable: true },
-    { tile: 8, walkable: true },
-    { tile: 9, walkable: true },
-    { tile: 10, walkable: true },
-    { tile: 11, walkable: true },
-  ],
-  [
-    { tile: 12, walkable: true },
-    { tile: 13, walkable: true },
-    { tile: 14, walkable: true },
-    { tile: 15, walkable: true },
-    { tile: 12, walkable: true },
-    { tile: 13, walkable: true },
-    { tile: 14, walkable: true },
-    { tile: 15, walkable: true },
-  ],
-];
+import playerImage from "@/assets/character/body/char1.png";
+import { map, playerFrames } from "@/constants";
+import { PlayerDirection } from "@/types";
 
 const tileSize = 16;
+const playerSize = 32;
 const scale = 2;
-const speed = 0.5; // Pixels per frame
+const speed = 0.35; // Pixels per frame
+const changeSpeed = 0.05;
 
 export default function Game({}: {}) {
   const [playerPosition, setPlayerPosition] = useState({ x: 0, y: 0 });
+  const [playerFramesCount, setPlayerFramesCount] = useState(0);
+  const [playerDirection, setPlayerDirection] = useState<PlayerDirection>("up");
+  const [playerFrameCoords, setPlayerFrameCoords] = useState({ x: 0, y: 0 });
   const keysPressed = useRef<{ [key: string]: boolean }>({});
 
   const isWalkable = (x: number, y: number) => {
-    const scaledTileSize = tileSize * scale;
+    console.log(x, y);
+    const scaledTileSize = tileSize * scale * .85
     const tileX1 = Math.floor(x / scaledTileSize);
     const tileY1 = Math.floor(y / scaledTileSize);
     const tileX2 = Math.floor((x + scaledTileSize - 1) / scaledTileSize);
@@ -120,16 +45,28 @@ export default function Game({}: {}) {
       let newPos = { ...prev };
       let tempPos = { ...prev };
       if (keysPressed.current["w"] || keysPressed.current["arrowup"]) {
+        // Up
         tempPos.y -= speed;
+        setPlayerDirection("up");
+        setPlayerFramesCount((prev) => prev + changeSpeed);
       }
       if (keysPressed.current["s"] || keysPressed.current["arrowdown"]) {
+        // Down
         tempPos.y += speed;
+        setPlayerDirection("down");
+        setPlayerFramesCount((prev) => prev + changeSpeed);
       }
       if (keysPressed.current["a"] || keysPressed.current["arrowleft"]) {
+        // Left
         tempPos.x -= speed;
+        setPlayerDirection("left");
+        setPlayerFramesCount((prev) => prev + changeSpeed);
       }
       if (keysPressed.current["d"] || keysPressed.current["arrowright"]) {
+        // Right
         tempPos.x += speed;
+        setPlayerDirection("right");
+        setPlayerFramesCount((prev) => prev + changeSpeed);
       }
 
       if (isWalkable(tempPos.x, tempPos.y)) {
@@ -138,14 +75,26 @@ export default function Game({}: {}) {
 
       return newPos;
     });
+    // setPlayerFramesCount(0);
 
     requestAnimationFrame(updatePlayerPosition);
   };
+
+  useEffect(() => {
+    console.log("hi", playerDirection, playerFramesCount);
+    setPlayerFrameCoords(
+      playerFrames[playerDirection][
+        Math.floor(playerFramesCount % playerFrames[playerDirection].length)
+      ]
+    );
+  }, [playerDirection, playerFramesCount]);
+
   const handleKeyDown = (e: KeyboardEvent) => {
     keysPressed.current[e.key.toLowerCase()] = true;
   };
 
   const handleKeyUp = (e: KeyboardEvent) => {
+    setPlayerFramesCount(0);
     keysPressed.current[e.key.toLowerCase()] = false;
   };
 
@@ -171,10 +120,12 @@ export default function Game({}: {}) {
     <div className="App">
       <TileMap
         tileSize={tileSize}
+        playerSize={playerSize}
         map={map}
         tileSheetSrc={tilesheet}
         playerPosition={playerPosition}
         playerImageSrc={playerImage}
+        playerFrameCoords={playerFrameCoords}
         scale={scale}
       />
     </div>

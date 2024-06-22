@@ -10,20 +10,24 @@ interface Tile {
 
 interface TileMapProps {
   tileSize: number;
+  playerSize: number;
   map: Tile[][];
   tileSheetSrc: string;
   playerPosition: { x: number; y: number };
   playerImageSrc: string;
   scale: number;
+  playerFrameCoords: { x: number; y: number };
 }
 
 const TileMap: React.FC<TileMapProps> = ({
   tileSize,
+  playerSize,
   map,
   tileSheetSrc,
   playerPosition,
   playerImageSrc,
   scale,
+  playerFrameCoords,
 }) => {
   const [image] = useImage(tileSheetSrc);
 
@@ -56,8 +60,10 @@ const TileMap: React.FC<TileMapProps> = ({
         <Player
           x={playerPosition.x}
           y={playerPosition.y}
-          tileSize={tileSize * scale}
+          tileSize={playerSize}
           playerImageSrc={playerImageSrc}
+          scale={scale}
+          playerFrameCoords={playerFrameCoords}
         />
       </Layer>
     </Stage>

@@ -6,3 +6,5 @@ export type UserType = {
   character_json: CharacterJSONType;
   created_at: string;
 };
+
+export type PlayerDirection = "up" | "down" | "left" | "right";
