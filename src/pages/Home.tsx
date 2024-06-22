@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Game from "@/components/Game2";
+import Game from "@/components/Game";
 import supabase from "@/lib/supabase";
 import { RealtimeChannel } from "@supabase/supabase-js";
 

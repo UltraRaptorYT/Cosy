@@ -95,10 +95,11 @@ export default function Game({}: {}) {
   const keysPressed = useRef<{ [key: string]: boolean }>({});
 
   const isWalkable = (x: number, y: number) => {
-    const tileX1 = Math.floor(x / (tileSize * scale));
-    const tileY1 = Math.floor(y / (tileSize * scale));
-    const tileX2 = Math.floor((x + tileSize * scale - 1) / (tileSize * scale));
-    const tileY2 = Math.floor((y + tileSize * scale - 1) / (tileSize * scale));
+    const scaledTileSize = tileSize * scale;
+    const tileX1 = Math.floor(x / scaledTileSize);
+    const tileY1 = Math.floor(y / scaledTileSize);
+    const tileX2 = Math.floor((x + scaledTileSize - 1) / scaledTileSize);
+    const tileY2 = Math.floor((y + scaledTileSize - 1) / scaledTileSize);
     return (
       map[tileY1] &&
       map[tileY1][tileX1] &&
