@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import TileMap from "./TileMap";
 import tilesheet from "@/assets/global.png";
 import playerImage from "@/assets/character/body/char1.png";
 import { map, playerFrames } from "@/constants";
 import { PlayerDirection } from "@/types";
+import { UserContext } from "@/context/UserContext";
 
 const tileSize = 16;
 const playerSize = 32;
@@ -12,15 +13,16 @@ const speed = 0.35; // Pixels per frame
 const changeSpeed = 0.03;
 
 export default function Game({}: {}) {
+  const userContext = useContext(UserContext);
   const [playerPosition, setPlayerPosition] = useState({ x: 0, y: 0 });
   const [playerFramesCount, setPlayerFramesCount] = useState(0);
-  const [playerDirection, setPlayerDirection] = useState<PlayerDirection>("down");
+  const [playerDirection, setPlayerDirection] =
+    useState<PlayerDirection>("down");
   const [playerFrameCoords, setPlayerFrameCoords] = useState({ x: 0, y: 0 });
   const keysPressed = useRef<{ [key: string]: boolean }>({});
 
   const isWalkable = (x: number, y: number) => {
-    console.log(x, y);
-    const scaledTileSize = tileSize * scale * .85
+    const scaledTileSize = tileSize * scale * 0.85;
     const tileX1 = Math.floor(x / scaledTileSize);
     const tileY1 = Math.floor(y / scaledTileSize);
     const tileX2 = Math.floor((x + scaledTileSize - 1) / scaledTileSize);
@@ -127,6 +129,7 @@ export default function Game({}: {}) {
         playerImageSrc={playerImage}
         playerFrameCoords={playerFrameCoords}
         scale={scale}
+        user={userContext?.user}
       />
     </div>
   );

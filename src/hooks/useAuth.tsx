@@ -3,13 +3,17 @@ import supabase from "@/lib/supabase";
 import CryptoJS from "crypto-js";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "@/context/UserContext";
-import { UserType } from "@/types";
+import { UserType, CharacterJSONType } from "@/types";
 
 export const useAuth = () => {
   const navigation = useNavigate();
   const userContext = useContext(UserContext);
 
-  const signUp = async (username: string, password: string) => {
+  const signUp = async (
+    username: string,
+    password: string,
+    playerAttributes: CharacterJSONType
+  ) => {
     const hashed = CryptoJS.SHA256(password);
     const { data, error } = await supabase
       .from("cosy_user")
@@ -17,7 +21,7 @@ export const useAuth = () => {
         {
           username,
           password: hashed.toString(CryptoJS.enc.Hex),
-          character_json: {},
+          character_json: playerAttributes,
         },
       ])
       .select();

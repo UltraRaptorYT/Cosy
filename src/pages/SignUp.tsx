@@ -5,12 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import GenerateCharacter from "@/components/GenerateCharacter";
 import { useNavigate } from "react-router-dom";
+import { CharacterJSONType } from "@/types";
 export default function SignUp() {
   const navigation = useNavigate();
   const { signUp } = useAuth();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [playerAttributes, setPlayerAttributes] = useState<CharacterJSONType>({
+    hair: 0,
+    pants: 0,
+    clothes: 0,
+    hairColor: 0,
+  });
 
   return (
     <div className="fullHeight flex flex-col justify-center items-center gap-3">
@@ -37,8 +44,13 @@ export default function SignUp() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <GenerateCharacter></GenerateCharacter>
-        <Button onClick={() => signUp(username, password)}>Sign Up</Button>
+        <GenerateCharacter
+          playerAttributes={playerAttributes}
+          setPlayerAttributes={setPlayerAttributes}
+        ></GenerateCharacter>
+        <Button onClick={() => signUp(username, password, playerAttributes)}>
+          Sign Up
+        </Button>
         <div className="flex items-center gap-2 justify-center text-sm mt-[10px]">
           <span>Already have an account?</span>
           <Button

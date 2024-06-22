@@ -1,7 +1,8 @@
 import React from "react";
 import { Stage, Layer, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
-import Player from "./Player";
+import Player from "@/components/Player";
+import { UserType } from "@/types";
 
 interface Tile {
   tile: number;
@@ -17,6 +18,7 @@ interface TileMapProps {
   playerImageSrc: string;
   scale: number;
   playerFrameCoords: { x: number; y: number };
+  user: UserType | undefined;
 }
 
 const TileMap: React.FC<TileMapProps> = ({
@@ -28,6 +30,7 @@ const TileMap: React.FC<TileMapProps> = ({
   playerImageSrc,
   scale,
   playerFrameCoords,
+  user,
 }) => {
   const [image] = useImage(tileSheetSrc);
 
@@ -64,6 +67,7 @@ const TileMap: React.FC<TileMapProps> = ({
           playerImageSrc={playerImageSrc}
           scale={scale}
           playerFrameCoords={playerFrameCoords}
+          playerAttributes={user?.character_json}
         />
       </Layer>
     </Stage>

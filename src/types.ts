@@ -1,4 +1,9 @@
-export type CharacterJSONType = {};
+export type CharacterJSONType = {
+  hair: number;
+  pants: number;
+  clothes: number;
+  hairColor: number;
+};
 
 export type UserType = {
   id: number;
