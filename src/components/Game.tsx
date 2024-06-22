@@ -9,12 +9,12 @@ const tileSize = 16;
 const playerSize = 32;
 const scale = 2;
 const speed = 0.35; // Pixels per frame
-const changeSpeed = 0.05;
+const changeSpeed = 0.03;
 
 export default function Game({}: {}) {
   const [playerPosition, setPlayerPosition] = useState({ x: 0, y: 0 });
   const [playerFramesCount, setPlayerFramesCount] = useState(0);
-  const [playerDirection, setPlayerDirection] = useState<PlayerDirection>("up");
+  const [playerDirection, setPlayerDirection] = useState<PlayerDirection>("down");
   const [playerFrameCoords, setPlayerFrameCoords] = useState({ x: 0, y: 0 });
   const keysPressed = useRef<{ [key: string]: boolean }>({});
 
