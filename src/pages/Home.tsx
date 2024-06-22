@@ -1,4 +1,4 @@
-import { useEffect, useContext, useRef, useState } from "react";
+import { useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "@/context/UserContext";
 import {
@@ -18,7 +18,7 @@ import supabase from "@/lib/supabase";
 import { RealtimeChannel } from "@supabase/supabase-js";
 
 export default function Home() {
-  const [channel, setChannel] = useState<RealtimeChannel>();
+  const [_, setChannel] = useState<RealtimeChannel>();
   const userContext = useContext(UserContext);
   const navigate = useNavigate();
   useEffect(() => {
