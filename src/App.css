@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --full-height: 100vh;
+}
+
+/* Update custom property if dvh is supported */
+@supports (height: 100dvh) {
+  :root {
+    --full-height: 100dvh;
+  }
+}
+
+.fullHeight {
+  height: var(--full-height);
+}
