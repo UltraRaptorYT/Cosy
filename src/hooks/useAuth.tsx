@@ -49,7 +49,6 @@ export const useAuth = () => {
       return { error };
     }
     if (data.length > 0) {
-      const user = data[0];
       setUserLogin(data[0]);
       return { error: null };
     }

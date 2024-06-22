@@ -67,9 +67,9 @@ export default function Home() {
   }, []);
 
   return (
-    <>
+    <div className="h-full flex items-center justify-center">
       <Game></Game>
-      <Drawer direction="right">
+      {/* <Drawer direction="right">
         <DrawerTrigger asChild>
           <Button>Open</Button>
         </DrawerTrigger>
@@ -89,7 +89,7 @@ export default function Home() {
             </DrawerFooter>
           </ScrollArea>
         </DrawerContent>
-      </Drawer>
-    </>
+      </Drawer> */}
+    </div>
   );
 }
