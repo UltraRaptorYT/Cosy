@@ -5,6 +5,7 @@ import playerImage from "@/assets/character/body/char1.png";
 import { map, playerFrames } from "@/constants";
 import { PlayerDirection, UserType } from "@/types";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import supabase from "@/lib/supabase";
 
 const tileSize = 16;
 const playerSize = 32;
@@ -12,16 +13,16 @@ const scale = 2;
 const speed = 1; // Pixels per frame
 const changeSpeed = 0.05;
 
-export default function Game({
-  user,
-  // channel,
-}: {
-  user: UserType | undefined;
-  channel: RealtimeChannel | undefined;
-}) {
+export default function Game({ user }: { user: UserType | undefined }) {
+  const channelRef = useRef<RealtimeChannel | undefined>(undefined);
+  const updateChannelRef = () => {
+    channelRef.current = channel;
+  };
+  const [channel, setChannel] = useState<RealtimeChannel>();
+  const [party, setParty] = useState<{ [key: string]: UserType }>({});
   const [playerPosition, setPlayerPosition] = useState({
-    x: 3 * tileSize * scale,
-    y: 3 * tileSize * scale,
+    x: 0,
+    y: 0,
   });
   const [playerFramesCount, setPlayerFramesCount] = useState(0);
   const [playerDirection, setPlayerDirection] =
@@ -101,11 +102,111 @@ export default function Game({
   };
 
   useEffect(() => {
+    updateChannelRef();
+  }, [channel]);
+
+  useEffect(() => {
+    const initChannel = async () => {
+      const newChannel = supabase.channel("cosy", {
+        config: {
+          broadcast: {
+            self: true,
+          },
+          presence: {
+            key: String(user?.id),
+          },
+        },
+      });
+
+      newChannel
+        .on("presence", { event: "sync" }, () => {
+          const newState = newChannel.presenceState();
+          console.log("sync", newState);
+        })
+        .on("presence", { event: "join" }, async ({ key, newPresences }) => {
+          console.log("join", key, newPresences);
+          setParty((prev) => {
+            const newState = { ...prev };
+            const user = newPresences[0].user;
+            user.playerCoords = { x: 0, y: 0 };
+            user.playerFrameCoords = { x: 0, y: 0 };
+            newState[key] = user;
+            return newState;
+          });
+        })
+        .on("presence", { event: "leave" }, async ({ key, leftPresences }) => {
+          console.log("leave", key, leftPresences);
+          setParty((prev) => {
+            const newState = { ...prev };
+            delete newState[key];
+            return newState;
+          });
+        });
+
+      newChannel.on("broadcast", { event: "player-move" }, (data) => {
+        setParty((prev) => {
+          const newState = { ...prev };
+          if (prev[data.payload.user_id]) {
+            newState[data.payload.user_id].playerCoords =
+              data.payload.playerCoords;
+            newState[data.payload.user_id].playerFrameCoords =
+              data.payload.playerFrameCoords;
+            return newState;
+          }
+          return newState;
+        });
+      });
+
+      await newChannel.subscribe(async (status) => {
+        if (status !== "SUBSCRIBED") {
+          console.error("Failed to subscribe to the channel");
+          return;
+        }
+
+        const presenceTrackStatus = await newChannel.track({
+          user_id: String(user?.id),
+          user: user,
+        });
+        console.log(presenceTrackStatus);
+      });
+
+      setChannel(newChannel);
+    };
+
+    if (user?.id) {
+      initChannel();
+    }
+
+    return () => {
+      if (channel) {
+        channel.unsubscribe();
+        setChannel(undefined);
+      }
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
     setPlayerFrameCoords(
       playerFrames[playerDirection][
         Math.floor(playerFramesCount % playerFrames[playerDirection].length)
       ]
     );
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: "broadcast",
+        event: "player-move",
+        payload: {
+          user_id: user?.id,
+          playerFrameCoords:
+            playerFrames[playerDirection][
+              Math.floor(
+                playerFramesCount % playerFrames[playerDirection].length
+              )
+            ],
+          playerCoords: { x: playerPosition.x, y: playerPosition.y },
+        },
+      });
+    }
   }, [playerDirection, playerFramesCount]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -138,6 +239,7 @@ export default function Game({
       playerFrameCoords={playerFrameCoords}
       scale={scale}
       user={user}
+      party={party}
     />
   );
 }

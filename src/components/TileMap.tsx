@@ -14,6 +14,7 @@ interface TileMapProps {
   scale: number;
   playerFrameCoords: { x: number; y: number };
   user: UserType | undefined;
+  party: { [key: string]: UserType };
 }
 
 const TileMap: React.FC<TileMapProps> = ({
@@ -26,6 +27,7 @@ const TileMap: React.FC<TileMapProps> = ({
   scale,
   playerFrameCoords,
   user,
+  party,
 }) => {
   const [image] = useImage(tileSheetSrc);
 
@@ -69,6 +71,23 @@ const TileMap: React.FC<TileMapProps> = ({
           playerFrameCoords={playerFrameCoords}
           playerAttributes={user?.character_json}
         />
+        {Object.values(party).map((e) => {
+          if (e.id === user?.id) {
+            return;
+          }
+          return (
+            <Player
+              key={e.id}
+              x={e.playerCoords?.x || 0}
+              y={e.playerCoords?.y || 0}
+              tileSize={playerSize}
+              playerImageSrc={playerImageSrc}
+              scale={scale}
+              playerFrameCoords={e.playerFrameCoords || { x: 0, y: 0 }}
+              playerAttributes={e.character_json}
+            />
+          );
+        })}
       </Layer>
     </Stage>
   );

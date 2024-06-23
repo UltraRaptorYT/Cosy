@@ -10,6 +10,8 @@ export type UserType = {
   username: string;
   character_json: CharacterJSONType;
   created_at: string;
+  playerFrameCoords?: { x: number; y: number };
+  playerCoords?: { x: number; y: number };
 };
 
 export type PlayerDirection = "up" | "down" | "left" | "right";
