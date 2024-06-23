@@ -17,14 +17,10 @@ import SpeechRecognition, {
 export default function Home() {
   const userContext = useContext(UserContext);
   const navigate = useNavigate();
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [_, setStream] = useState<MediaStream | null>(null);
   const lastProcessedTranscript = useRef<string>("");
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition();
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
 
   useEffect(() => {
     const user = sessionStorage.getItem("user");
@@ -40,7 +36,10 @@ export default function Home() {
       .getUserMedia({ video: false, audio: true })
       .then((currentStream) => {
         setStream(currentStream);
-        SpeechRecognition.startListening({ continuous: true,language: 'en-GB' });
+        SpeechRecognition.startListening({
+          continuous: true,
+          language: "en-GB",
+        });
       })
       .catch((error) => {
         console.error("Error accessing media devices:", error);
@@ -78,7 +77,6 @@ export default function Home() {
   return (
     <div className="h-full flex items-center justify-center">
       <Game user={userContext?.user} />
-      <p>Listening: {listening ? "Yes" : "No"}</p>
       <p>Recognized Word: {transcript}</p>
     </div>
   );
