@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chengsokdara/use-whisper": "^0.2.0",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-scroll-area": "^1.1.0",
@@ -26,6 +27,8 @@
     "react-dom": "^18.3.1",
     "react-konva": "^18.2.10",
     "react-router-dom": "^6.23.1",
+    "react-speech-recognition": "^3.10.0",
+    "regenerator-runtime": "^0.14.1",
     "simple-peer": "^9.11.1",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.3.0",
@@ -35,10 +38,12 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
+    "@types/dom-speech-recognition": "^0.0.4",
     "@types/lodash": "^4.17.5",
     "@types/node": "^20.14.8",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/react-speech-recognition": "^3.9.5",
     "@types/simple-peer": "^9.11.8",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
