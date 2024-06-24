@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import TileMap from "./TileMap";
 import tilesheet from "@/assets/global.png";
 import playerImage from "@/assets/character/body/char1.png";
@@ -6,12 +6,22 @@ import { map, playerFrames } from "@/constants";
 import { PlayerDirection, UserType } from "@/types";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import supabase from "@/lib/supabase";
+import "regenerator-runtime/runtime";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
+import { Button } from "./ui/button";
 
 const tileSize = 16;
 const playerSize = 32;
 const scale = 2;
 const speed = 1; // Pixels per frame
 const changeSpeed = 0.05;
+
+type MessageType = {
+  user_id: number;
+  message: string;
+};
 
 export default function Game({ user }: { user: UserType | undefined }) {
   const channelRef = useRef<RealtimeChannel | undefined>(undefined);
@@ -30,6 +40,10 @@ export default function Game({ user }: { user: UserType | undefined }) {
   const [playerFrameCoords, setPlayerFrameCoords] = useState({ x: 0, y: 0 });
   const keysPressed = useRef<{ [key: string]: boolean }>({});
   const lastUpdateRef = useRef<number>(0);
+  const lastProcessedTranscript = useRef<string>("");
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
+  const [message, setMessages] = useState<MessageType[]>([]);
 
   const isWalkable = (x: number, y: number) => {
     const scaledTileSize = tileSize * scale * 0.85;
@@ -143,19 +157,27 @@ export default function Game({ user }: { user: UserType | undefined }) {
           });
         });
 
-      newChannel.on("broadcast", { event: "player-move" }, (data) => {
-        setParty((prev) => {
-          const newState = { ...prev };
-          if (prev[data.payload.user_id]) {
-            newState[data.payload.user_id].playerCoords =
-              data.payload.playerCoords;
-            newState[data.payload.user_id].playerFrameCoords =
-              data.payload.playerFrameCoords;
+      newChannel
+        .on("broadcast", { event: "player-move" }, (data) => {
+          setParty((prev) => {
+            const newState = { ...prev };
+            if (prev[data.payload.user_id]) {
+              newState[data.payload.user_id].playerCoords =
+                data.payload.playerCoords;
+              newState[data.payload.user_id].playerFrameCoords =
+                data.payload.playerFrameCoords;
+              return newState;
+            }
             return newState;
-          }
-          return newState;
+          });
+        })
+        .on("broadcast", { event: "message" }, (data) => {
+          setMessages((prev) => {
+            const newState = [...prev];
+            newState.push(data.payload as MessageType);
+            return newState;
+          });
         });
-      });
 
       await newChannel.subscribe(async (status) => {
         if (status !== "SUBSCRIBED") {
@@ -221,25 +243,73 @@ export default function Game({ user }: { user: UserType | undefined }) {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     requestAnimationFrame(updatePlayerPosition);
-
+    SpeechRecognition.startListening({
+      continuous: true,
+      language: "en-GB",
+    });
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
+  const memoizedTranscript = useMemo(
+    () => transcript.toLowerCase(),
+    [transcript]
+  );
+
+  const handleTranscript = useCallback(() => {
+    if (
+      memoizedTranscript.includes("open cosy") &&
+      lastProcessedTranscript.current !== memoizedTranscript
+    ) {
+      alert("Command recognized: Open Cosy");
+      lastProcessedTranscript.current = memoizedTranscript;
+      resetTranscript();
+    }
+  }, [memoizedTranscript, resetTranscript]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      handleTranscript();
+    }, 1000); // Debounce time in milliseconds
+
+    return () => clearTimeout(handler);
+  }, [memoizedTranscript, handleTranscript]);
+
+  if (!browserSupportsSpeechRecognition) {
+    return <span>Browser doesn't support speech recognition.</span>;
+  }
 
   return (
-    <TileMap
-      tileSize={tileSize}
-      playerSize={playerSize}
-      map={map}
-      tileSheetSrc={tilesheet}
-      playerPosition={playerPosition}
-      playerImageSrc={playerImage}
-      playerFrameCoords={playerFrameCoords}
-      scale={scale}
-      user={user}
-      party={party}
-    />
+    <>
+      <TileMap
+        tileSize={tileSize}
+        playerSize={playerSize}
+        map={map}
+        tileSheetSrc={tilesheet}
+        playerPosition={playerPosition}
+        playerImageSrc={playerImage}
+        playerFrameCoords={playerFrameCoords}
+        scale={scale}
+        user={user}
+        party={party}
+      />
+      {user?.id == 1 ? (
+        <Button
+          onClick={() => {
+            if (channelRef.current) {
+              channelRef.current.send({
+                type: "broadcast",
+                event: "message",
+                payload: {
+                  user_id: user?.id,
+                  message: "hello",  
+                },
+              });
+            }
+          }}
+        ></Button>
+      ) : null}
+    </>
   );
 }
